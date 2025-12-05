@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: dev-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=StrongPass123!          # đổi cho mạnh, nhớ dùng đúng ở connection string
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssqldata:/var/opt/mssql
+    networks:
+      - app-net
+
+  backend:
+    build:
+      context: .            # Dockerfile của backend ở root
+      dockerfile: Dockerfile
+    container_name: dev-backend
+    depends_on:
+      - db
+    environment:
+      # Ghi đè connection string conn1 trong appsettings.json
+      - ConnectionStrings__conn1=Server=db,1433;Database=mvcapiquanlysach;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8080:8080"         # host:8080 -> container:8080
+    networks:
+      - app-net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: dev-frontend
+    depends_on:
+      - backend
+    environment:
+      # Browser sẽ gọi API qua localhost (vì port 8080 đã map ra host)
+      - REACT_APP_API_URL=http://localhost:8080
+    ports:
+      - "3000:3000"
+    networks:
+      - app-net
+
+volumes:
+  mssqldata:
+
+networks:
+  app-net:

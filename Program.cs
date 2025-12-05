@@ -3,10 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Lấy connection string từ appsettings.json
+// Lấy connection string
 string connStr = builder.Configuration.GetConnectionString("conn1");
 
 // Đăng ký DbContext

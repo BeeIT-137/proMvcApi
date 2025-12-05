@@ -1,0 +1,39 @@
+name: Build & Deploy MVC to Somee
+
+on:
+  push:
+    branches:
+      - main   # push lên main là auto deploy
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Publish MVC app
+        # ĐÚNG tên csproj của bạn
+        run: dotnet publish proMvcApi.csproj -c Release -o publish
+
+      - name: FTP Deploy to Somee
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.HOST }}      # anhdung.somee.com
+          username: ${{ secrets.USER }}    # padu
+          password: ${{ secrets.PASSWD }}  # Caubedatai137@@ (đặt trong secrets)
+
+          protocol: ftp
+          port: 21
+
+          local-dir: ./publish/
+          server-dir: /www.anhdung.somee.com/
